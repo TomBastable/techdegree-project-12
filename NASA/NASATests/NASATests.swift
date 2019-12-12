@@ -19,16 +19,38 @@ class NASATests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testSatelliteImage() {
+        
+        retrieveSatelliteImageryWith(latitude: "39.201790", longitude: "-90.584007") { (image, error) in
+            XCTAssertFalse(error != nil)
         }
+        
+    }
+    
+    func testPOTDImage(){
+        retrievePhotoOfTheDay { (photo, error) in
+            XCTAssertFalse(error != nil)
+        }
+    }
+    
+    func testMarsWeather(){
+        retrieveMarsWeather { (weather, error) in
+            XCTAssertFalse(error != nil)
+        }
+    }
+    
+    func testRoverImage(){
+        retrieveMarsRoverImagery { (roverImage, error) in
+            XCTAssertFalse(error != nil)
+        }
+    }
+    
+    func testIncorrectCoordinateSatelliteImage(){
+        
+        retrieveSatelliteImageryWith(latitude: "", longitude: "") { (image, error) in
+            XCTAssertFalse(error != nil)
+        }
+        
     }
 
 }
