@@ -23,13 +23,11 @@ class POTDView: UIView {
     //MARK: - Setup View
     ///Call this function to setup the view. no input needed.
     func setup(with vc: UIViewController) {
+        //show view is loading
+        viewIsLoading()
         
-        //indicate the view is loading to the user
-        self.activityIndicator.startAnimating()
-        self.activityIndicator.isHidden = false
         //call the API
         retrievePhotoOfTheDay { (photo, error) in
-            
             //check for no errors
             if error == nil{
                 //assign the photo from the array
@@ -37,6 +35,7 @@ class POTDView: UIView {
                     DispatchQueue.main.async {
                       vc.displayAlertWith(error: HoustonError.responseUnsuccessful)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 //get the photos url
@@ -44,6 +43,7 @@ class POTDView: UIView {
                     DispatchQueue.main.async {
                       vc.displayAlertWith(error: HoustonError.responseUnsuccessful)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 //get the image data
@@ -53,6 +53,7 @@ class POTDView: UIView {
                     DispatchQueue.main.async {
                       vc.displayAlertWith(error: HoustonError.invalidData)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 //assign image from data
@@ -62,10 +63,8 @@ class POTDView: UIView {
                     //set photo and description
                     self.photoOfTheDay.image = image
                     self.descriptionlabel.text = thePhoto.descrip
-                    //show the view has loaded
-                    self.activityIndicator.stopAnimating()
-                    self.activityIndicator.isHidden = true
                 }
+                self.viewHasLoaded()
                 
         
             }
@@ -75,15 +74,26 @@ class POTDView: UIView {
                 DispatchQueue.main.async {
                     vc.displayAlertWith(error: error!)
                     self.descriptionlabel.text = error!.localizedDescription
-                    self.activityIndicator.stopAnimating()
-                    self.activityIndicator.isHidden = true
                 }
+                self.viewHasLoaded()
                 
             }
         }
         
     }
     
+    func viewIsLoading(){
+        //indicate the view is loading to the user
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+            self.activityIndicator.isHidden = false
+        }
+    }
     
-    
+    func viewHasLoaded(){
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.activityIndicator.isHidden = true
+        }
+    }
 }

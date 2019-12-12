@@ -24,9 +24,8 @@ class PostcardView: UIView, UITextViewDelegate {
     //MARK: - Setup Postcard
     ///Sets up the postcard view with a random image from the curiosity rover. 
     func setupPostcard(with vc: UIViewController) {
-        //indicate the view is loading in the UI
-        self.activityIndicator.isHidden = false
-        self.activityIndicator.startAnimating()
+        
+        viewIsLoading()
         //call the API
         retrieveMarsRoverImagery { (images, error) in
             //check that there aren't any errors
@@ -36,6 +35,7 @@ class PostcardView: UIView, UITextViewDelegate {
                     DispatchQueue.main.async{
                     vc.displayAlertWith(error: HoustonError.responseUnsuccessful)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 //get url and safely get data
@@ -45,6 +45,7 @@ class PostcardView: UIView, UITextViewDelegate {
                     DispatchQueue.main.async{
                     vc.displayAlertWith(error: HoustonError.invalidData)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 //assign image from data
@@ -53,19 +54,15 @@ class PostcardView: UIView, UITextViewDelegate {
                 DispatchQueue.main.async{
                     //assign image
                     self.marsImageView.image = image
-                    //indicate in the UI it has loaded
-                    self.activityIndicator.isHidden = true
-                    self.activityIndicator.stopAnimating()
                 }
-                
+                self.viewHasLoaded()
             }else{
                 //error
                 DispatchQueue.main.async{
                     vc.displayAlertWith(error: error!)
-                    self.activityIndicator.isHidden = true
-                    self.activityIndicator.stopAnimating()
                     self.textView.text = error!.localizedDescription
                 }
+                self.viewHasLoaded()
                 //indicate in the UI it has finished
                 
             }
@@ -99,6 +96,21 @@ class PostcardView: UIView, UITextViewDelegate {
                 textView.text.remove(at: textView.text.index(before: textView.text.endIndex))
                 
             }
+        }
+    }
+    
+    func viewIsLoading(){
+        //indicate the view is loading to the user
+        DispatchQueue.main.async {
+            self.activityIndicator.startAnimating()
+            self.activityIndicator.isHidden = false
+        }
+    }
+    
+    func viewHasLoaded(){
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.activityIndicator.isHidden = true
         }
     }
 }

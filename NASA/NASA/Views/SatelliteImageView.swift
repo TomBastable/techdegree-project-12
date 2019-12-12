@@ -22,12 +22,8 @@ class SatelliteImageView: UIView {
     ///Sets the view up and displays satellite imagery based on the coordinate placed into the function.
     
     func setupViewWith(vc: UIViewController, coordinate: CLLocationCoordinate2D){
-        
-        //show the user the view is loading - disable close button to avoid confused re-loading.
-        self.activityIndicator.isHidden = false
-        self.activityIndicator.startAnimating()
-        self.closeButton.isHidden = true
-        self.cloudPercentage.text = "Loading Imagery For That Location..."
+        //show view is loading
+        viewIsLoading()
         
         //unhide view
         self.isHidden = false
@@ -35,22 +31,18 @@ class SatelliteImageView: UIView {
         //call api and retrieve imagery
         retrieveSatelliteImageryWith(latitude: coordinate.latitude.description, longitude: coordinate.longitude.description) { (satImage, error) in
             
-            
             //check for no errors
             if error == nil {
                 
                 
                 //safely unwrap satellite image
                 guard let satImage = satImage.first else{
-                    //image error
                     //no image for that location
                     DispatchQueue.main.async{
                         //display no imagery for that location to the user - Don't display an alert as it's not an error - there isn't any imagery for the location.
-                        self.closeButton.isHidden = false
-                        self.activityIndicator.isHidden = true
-                        self.activityIndicator.stopAnimating()
                         self.cloudPercentage.text = "No Satellite Imagery For That Location"
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 
@@ -61,6 +53,7 @@ class SatelliteImageView: UIView {
                     DispatchQueue.main.async{
                     vc.displayAlertWith(error: HoustonError.responseUnsuccessful)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 
@@ -72,6 +65,7 @@ class SatelliteImageView: UIView {
                     DispatchQueue.main.async{
                     vc.displayAlertWith(error: HoustonError.invalidData)
                     }
+                    self.viewHasLoaded()
                     return
                 }
                 
@@ -79,25 +73,20 @@ class SatelliteImageView: UIView {
                 let image = UIImage(data: imageData)
                 //dispatch to main queue to change UI
                 DispatchQueue.main.async{
-                    //display load stop to UI
-                    self.closeButton.isHidden = false
-                    self.activityIndicator.isHidden = true
-                    self.activityIndicator.stopAnimating()
                     //set image
                     self.satelliteImage.image = image
                     //set text
                     self.cloudPercentage.text = "Precentage Of Cloud Cover In Above Image: \(satImage.cloudPercentage.rounded(toPlaces: 2)*100)%"
                 }
+                self.viewHasLoaded()
             }else if error != nil{
                 //error
                 DispatchQueue.main.async{
                 vc.displayAlertWith(error: error!)
                 //display no imagery for that location to the user
-                self.closeButton.isHidden = false
-                self.activityIndicator.isHidden = true
-                self.activityIndicator.stopAnimating()
                 self.cloudPercentage.text = "Error downloading Satellite Image"
                 }
+                self.viewHasLoaded()
             }
         }
     }
@@ -113,6 +102,24 @@ class SatelliteImageView: UIView {
         self.satelliteImage.image = nil
         self.cloudPercentage.text = nil
         self.isHidden = true
+        }
+    }
+    
+    func viewIsLoading(){
+        //indicate the view is loading to the user
+        DispatchQueue.main.async {
+            self.closeButton.isHidden = true
+            self.cloudPercentage.text = "Loading Imagery For That Location..."
+            self.activityIndicator.startAnimating()
+            self.activityIndicator.isHidden = false
+        }
+    }
+    
+    func viewHasLoaded(){
+        DispatchQueue.main.async {
+            self.closeButton.isHidden = false
+            self.activityIndicator.stopAnimating()
+            self.activityIndicator.isHidden = true
         }
     }
     
